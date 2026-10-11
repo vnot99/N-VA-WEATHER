@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NØVA WEATHER</title>
+<style>
+body {
+  margin: 0;
+  padding: 22px;
+  background: #070b13;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+.app {
+  max-width: 420px;
+  margin: auto;
+  padding: 22px;
+  border: 1px solid #00dcff;
+  border-radius: 22px;
+  background: #101827;
+  box-shadow: 0 0 25px #00dcff22;
+}
+h1 { color: #00dcff; }
+input, button {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #00dcff;
+  background: #07111e;
+  color: white;
+}
+input { width: 55%; }
+button { background: #00dcff; color: #001018; }
+.temp { font-size: 65px; margin: 15px 0; }
+.card {
+  padding: 12px;
+  margin-top: 10px;
+  background: #172438;
+  border-radius: 12px;
+}
+.small { color: #9cb4ca; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🌌 NØVA WEATHER</h1>
+  <p class="small">THỜI TIẾT CỦA RIÊNG BẠN</p>
+
+  <input id="city" value="Thái Bình"
+         placeholder="Nhập thành phố">
+  <button onclick="loadWeather()">Tìm</button>
+
+  <div class="card">
+    <h2 id="place">Đang tải...</h2>
+    <div class="temp" id="temp">--°</div>
+    <h3 id="desc">Đang lấy thời tiết...</h3>
+    <p id="details">Vui lòng chờ</p>
+  </div>
+
+  <div class="card">
+    <h3>📅 Dự báo 7 ngày</h3>
+    <div id="forecast">Đang tải...</div>
+  </div>
+
+  <p class="small">Dữ liệu: Open-Meteo</p>
+</div>
+
+<script>
+async function loadWeather() {
+  const city = document.getElementById("city").value.trim();
+  if (!city) return;
+
+  document.getElementById("place").textContent = "Đang tìm...";
+  document.getElementById("forecast").textContent = "Đang tải...";
+
+  try {
+    const geo = await fetch(
+      "https://geocoding-api.open-meteo.com/v1/search?name=" +
+      encodeURIComponent(city) + "&count=1&language=vi&format=json"
+    ).then(r => r.json());
+
+    if (!geo.results || !geo.results.length) {
+      throw new Error("Không tìm thấy thành phố!");
+    }
+
+    const p = geo.results[0];
+
+    const url = "https://api.open-meteo.com/v1/forecast?" +
+      "latitude=" + p.latitude +
+      "&longitude=" + p.longitude +
+      "&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code" +
+      "&daily=weather_code,temperature_2m_max,temperature_2m_min" +
+      "&forecast_days=7&timezone=auto";
+
+    const data = await fetch(url).then(r => r.json());
+    const c = data.current;
+
+    const weather = {
+      0: "☀️ Trời quang",
+      1: "🌤️ Ít mây",
+      2: "⛅ Có mây",
+      3: "☁️ Nhiều mây",
+      45: "🌫️ Sương mù",
+      48: "🌫️ Sương mù",
+      51: "🌦️ Mưa phùn",
+      53: "🌦️ Mưa phùn",
+      55: "🌧️ Mưa phùn",
+      61: "🌧️ Mưa nhẹ",
+      63: "🌧️ Mưa vừa",
+      65: "🌧️ Mưa lớn",
+      80: "🌦️ Mưa rào",
+      81: "🌧️ Mưa rào",
+      82: "⛈️ Mưa rào lớn",
+      95: "⛈️ Dông"
+    };
+
+    document.getElementById("place").textContent =
+      p.name + (p.country ? ", " + p.country : "");
+
+    document.getElementById("temp").textContent =
+      Math.round(c.temperature_2m) + "°";
+
+    document.getElementById("desc").textContent =
+      weather[c.weather_code] || "🌡️ Thời tiết thay đổi";
+
+    document.getElementById("details").textContent =
+      "💧 Độ ẩm: " + c.relative_humidity_2m + "%" +
+      " | 💨 Gió: " + c.wind_speed_10m + " km/h" +
+      " | 🌡️ Cảm giác: " +
+      Math.round(c.apparent_temperature) + "°";
+
+    document.getElementById("forecast").innerHTML =
+      data.daily.time.map((day, i) => {
+        const d = new Date(day + "T12:00:00");
+        const name = d.toLocaleDateString("vi-VN", {
+          weekday: "long", day: "2-digit", month: "2-digit"
+        });
+
+        return `<div class="card">
+          📆 ${name}<br>
+          🌡️ Cao ${Math.round(data.daily.temperature_2m_max[i])}°
+          · Thấp ${Math.round(data.daily.temperature_2m_min[i])}°
+        </div>`;
+      }).join("");
+
+  } catch (e) {
+    document.getElementById("place").textContent = "Có lỗi xảy ra";
+    document.getElementById("desc").textContent = e.message;
+    document.getElementById("forecast").textContent =
+      "Hãy kiểm tra Internet và thử lại.";
+  }
+}
+
+loadWeather();
+</script>
+</body>
+</html>
