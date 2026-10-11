@@ -5,152 +5,352 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NØVA WEATHER</title>
+
 <style>
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
-  padding: 22px;
-  background: #070b13;
-  color: white;
+  padding: 18px;
+  background: #050a12;
+  color: #eefaff;
   font-family: Arial, sans-serif;
 }
+
 .app {
-  max-width: 420px;
+  max-width: 480px;
   margin: auto;
-  padding: 22px;
-  border: 1px solid #00dcff;
-  border-radius: 22px;
-  background: #101827;
-  box-shadow: 0 0 25px #00dcff22;
 }
-h1 { color: #00dcff; }
-input, button {
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #00dcff;
-  background: #07111e;
+
+header {
+  color: #00e5ff;
+  text-align: center;
+  padding: 18px 0;
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-shadow: 0 0 18px #00e5ff66;
+}
+
+.subtitle {
+  color: #829bb5;
+  font-size: 11px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+input {
+  flex: 1;
+  min-width: 0;
+  background: #101c2c;
+  border: 1px solid #17455a;
   color: white;
-}
-input { width: 55%; }
-button { background: #00dcff; color: #001018; }
-.temp { font-size: 65px; margin: 15px 0; }
-.card {
-  padding: 12px;
-  margin-top: 10px;
-  background: #172438;
   border-radius: 12px;
+  padding: 13px;
+  font-size: 15px;
 }
-.small { color: #9cb4ca; }
+
+button {
+  background: #00dfff;
+  color: #00121a;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 15px;
+  font-weight: bold;
+}
+
+.card {
+  background: linear-gradient(145deg, #122033, #0b1320);
+  border: 1px solid #17384d;
+  border-radius: 19px;
+  padding: 20px;
+  margin-bottom: 15px;
+  box-shadow: 0 0 20px #00dfff0b;
+}
+
+.label {
+  color: #8aa8c2;
+  font-size: 12px;
+}
+
+.city {
+  font-size: 21px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.temp {
+  font-size: 76px;
+  font-weight: bold;
+  color: #00e5ff;
+  margin: 12px 0;
+}
+
+.desc {
+  font-size: 17px;
+}
+
+.details {
+  color: #a8bed1;
+  line-height: 1.9;
+  font-size: 14px;
+  margin-top: 18px;
+}
+
+h3 {
+  font-size: 16px;
+  margin-top: 0;
+}
+
+.day {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  border-bottom: 1px solid #203044;
+  padding: 14px 0;
+  font-size: 13px;
+}
+
+.day:last-child {
+  border-bottom: 0;
+}
+
+.dayname { flex: 1; }
+.daytemp { white-space: nowrap; }
+.small {
+  color: #829bb5;
+  font-size: 11px;
+  text-align: center;
+  line-height: 1.8;
+}
+
+#status {
+  font-size: 12px;
+  color: #8ba8bd;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.error { color: #ff8ca4 !important; }
+
+.hourly {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.hour {
+  min-width: 72px;
+  background: #0a1726;
+  padding: 12px 8px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 12px;
+}
+
+.hour div { margin: 8px 0; }
+
+@media (max-width: 360px) {
+  body { padding: 10px; }
+  .temp { font-size: 64px; }
+  .card { padding: 15px; }
+}
 </style>
 </head>
+
 <body>
 <div class="app">
-  <h1>🌌 NØVA WEATHER</h1>
-  <p class="small">THỜI TIẾT CỦA RIÊNG BẠN</p>
 
+<header>🌌 NØVA WEATHER</header>
+<div class="subtitle">YOUR PERSONAL WEATHER STATION</div>
+
+<form class="search" id="searchForm">
   <input id="city" value="Thái Bình"
-         placeholder="Nhập thành phố">
-  <button onclick="loadWeather()">Tìm</button>
+         placeholder="Nhập tên thành phố">
+  <button type="submit">Tìm</button>
+</form>
 
-  <div class="card">
-    <h2 id="place">Đang tải...</h2>
-    <div class="temp" id="temp">--°</div>
-    <h3 id="desc">Đang lấy thời tiết...</h3>
-    <p id="details">Vui lòng chờ</p>
+<div id="status">Đang kết nối dữ liệu thời tiết...</div>
+
+<section class="card">
+  <div class="label">THỜI TIẾT HIỆN TẠI</div>
+  <div class="city" id="cityName">Đang tải...</div>
+  <div class="temp" id="temp">--°</div>
+  <div class="desc" id="desc">🌍 Đang lấy dữ liệu...</div>
+
+  <div class="details">
+    💧 Độ ẩm: <b id="humidity">--</b><br>
+    💨 Tốc độ gió: <b id="wind">--</b><br>
+    🌡️ Cảm giác như: <b id="feels">--</b><br>
+    📅 Nhiệt độ cao nhất: <b id="max">--</b><br>
+    🌙 Nhiệt độ thấp nhất: <b id="min">--</b>
   </div>
+</section>
 
-  <div class="card">
-    <h3>📅 Dự báo 7 ngày</h3>
-    <div id="forecast">Đang tải...</div>
+<section class="card">
+  <h3>🕒 Dự báo theo giờ</h3>
+  <div class="hourly" id="hourly">
+    <p>Đang tải...</p>
   </div>
+</section>
 
-  <p class="small">Dữ liệu: Open-Meteo</p>
+<section class="card">
+  <h3>📅 Dự báo 7 ngày</h3>
+  <div id="forecast">Đang tải...</div>
+</section>
+
+<div class="small">
+  NØVA WEATHER · Dữ liệu từ Open-Meteo<br>
+  Dự báo cần kết nối Internet.
+</div>
+
 </div>
 
 <script>
-async function loadWeather() {
-  const city = document.getElementById("city").value.trim();
-  if (!city) return;
+const $ = id => document.getElementById(id);
 
-  document.getElementById("place").textContent = "Đang tìm...";
-  document.getElementById("forecast").textContent = "Đang tải...";
+function weatherInfo(code) {
+  if (code === 0) return ["☀️", "Trời quang"];
+  if (code <= 2) return ["🌤️", "Ít mây"];
+  if (code === 3) return ["☁️", "Nhiều mây"];
+  if (code === 45 || code === 48)
+    return ["🌫️", "Sương mù"];
+  if (code <= 57) return ["🌦️", "Mưa phùn"];
+  if (code <= 67) return ["🌧️", "Trời mưa"];
+  if (code <= 77) return ["❄️", "Tuyết"];
+  if (code <= 82) return ["🌧️", "Mưa rào"];
+  if (code >= 95) return ["⛈️", "Dông"];
+  return ["🌥️", "Thời tiết thay đổi"];
+}
+
+function round(n) {
+  return Math.round(n);
+}
+
+async function getJSON(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Lỗi kết nối dữ liệu.");
+  return response.json();
+}
+
+async function loadWeather() {
+  const city = $("city").value.trim();
+  if (!city) {
+    $("status").textContent = "Hãy nhập tên thành phố.";
+    return;
+  }
+
+  $("status").className = "";
+  $("status").textContent = "⏳ Đang tải thời tiết...";
+  $("cityName").textContent = "Đang tìm địa điểm...";
+  $("desc").textContent = "Đang cập nhật...";
+  $("forecast").textContent = "Đang tải...";
+  $("hourly").textContent = "Đang tải...";
 
   try {
-    const geo = await fetch(
+    const geo = await getJSON(
       "https://geocoding-api.open-meteo.com/v1/search?name=" +
-      encodeURIComponent(city) + "&count=1&language=vi&format=json"
-    ).then(r => r.json());
+      encodeURIComponent(city) +
+      "&count=10&language=vi&format=json"
+    );
 
     if (!geo.results || !geo.results.length) {
-      throw new Error("Không tìm thấy thành phố!");
+      throw new Error("Không tìm thấy thành phố này.");
     }
 
-    const p = geo.results[0];
+    const p = geo.results.find(x => x.country_code === "VN")
+      || geo.results[0];
 
-    const url = "https://api.open-meteo.com/v1/forecast?" +
-      "latitude=" + p.latitude +
-      "&longitude=" + p.longitude +
-      "&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code" +
-      "&daily=weather_code,temperature_2m_max,temperature_2m_min" +
-      "&forecast_days=7&timezone=auto";
+    const params = new URLSearchParams({
+      latitude: p.latitude,
+      longitude: p.longitude,
+      current: "temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code",
+      hourly: "temperature_2m,precipitation_probability,weather_code",
+      daily: "weather_code,temperature_2m_max,temperature_2m_min",
+      forecast_days: "7",
+      timezone: "auto"
+    });
 
-    const data = await fetch(url).then(r => r.json());
+    const data = await getJSON(
+      "https://api.open-meteo.com/v1/forecast?" + params
+    );
+
     const c = data.current;
+    const d = data.daily;
+    const h = data.hourly;
+    const info = weatherInfo(c.weather_code);
 
-    const weather = {
-      0: "☀️ Trời quang",
-      1: "🌤️ Ít mây",
-      2: "⛅ Có mây",
-      3: "☁️ Nhiều mây",
-      45: "🌫️ Sương mù",
-      48: "🌫️ Sương mù",
-      51: "🌦️ Mưa phùn",
-      53: "🌦️ Mưa phùn",
-      55: "🌧️ Mưa phùn",
-      61: "🌧️ Mưa nhẹ",
-      63: "🌧️ Mưa vừa",
-      65: "🌧️ Mưa lớn",
-      80: "🌦️ Mưa rào",
-      81: "🌧️ Mưa rào",
-      82: "⛈️ Mưa rào lớn",
-      95: "⛈️ Dông"
-    };
+    $("cityName").textContent =
+      p.name + (p.admin1 ? ", " + p.admin1 : "");
 
-    document.getElementById("place").textContent =
-      p.name + (p.country ? ", " + p.country : "");
+    $("temp").textContent = round(c.temperature_2m) + "°";
+    $("desc").textContent = info[0] + " " + info[1];
+    $("humidity").textContent = c.relative_humidity_2m + "%";
+    $("wind").textContent = c.wind_speed_10m + " km/h";
+    $("feels").textContent = round(c.apparent_temperature) + "°";
+    $("max").textContent = round(d.temperature_2m_max[0]) + "°C";
+    $("min").textContent = round(d.temperature_2m_min[0]) + "°C";
 
-    document.getElementById("temp").textContent =
-      Math.round(c.temperature_2m) + "°";
+    const start = Math.max(0, h.time.findIndex(t => t >= c.time));
 
-    document.getElementById("desc").textContent =
-      weather[c.weather_code] || "🌡️ Thời tiết thay đổi";
+    $("hourly").innerHTML = h.time.slice(start, start + 24)
+      .map((time, j) => {
+        const i = start + j;
+        const wi = weatherInfo(h.weather_code[i]);
+        const label = j === 0 ? "Hiện tại" :
+          new Date(time).toLocaleTimeString("vi-VN", {
+            hour: "2-digit", minute: "2-digit"
+          });
 
-    document.getElementById("details").textContent =
-      "💧 Độ ẩm: " + c.relative_humidity_2m + "%" +
-      " | 💨 Gió: " + c.wind_speed_10m + " km/h" +
-      " | 🌡️ Cảm giác: " +
-      Math.round(c.apparent_temperature) + "°";
-
-    document.getElementById("forecast").innerHTML =
-      data.daily.time.map((day, i) => {
-        const d = new Date(day + "T12:00:00");
-        const name = d.toLocaleDateString("vi-VN", {
-          weekday: "long", day: "2-digit", month: "2-digit"
-        });
-
-        return `<div class="card">
-          📆 ${name}<br>
-          🌡️ Cao ${Math.round(data.daily.temperature_2m_max[i])}°
-          · Thấp ${Math.round(data.daily.temperature_2m_min[i])}°
+        return `<div class="hour">
+          <div>${label}</div>
+          <div style="font-size:22px">${wi[0]}</div>
+          <div><b>${round(h.temperature_2m[i])}°</b></div>
+          <div>💧${h.precipitation_probability?.[i] ?? 0}%</div>
         </div>`;
       }).join("");
 
-  } catch (e) {
-    document.getElementById("place").textContent = "Có lỗi xảy ra";
-    document.getElementById("desc").textContent = e.message;
-    document.getElementById("forecast").textContent =
-      "Hãy kiểm tra Internet và thử lại.";
+    $("forecast").innerHTML = d.time.map((day, i) => {
+      const date = new Date(day + "T12:00:00");
+      const name = i === 0 ? "Hôm nay" :
+        date.toLocaleDateString("vi-VN", {
+          weekday: "short", day: "2-digit", month: "2-digit"
+        });
+      const wi = weatherInfo(d.weather_code[i]);
+
+      return `<div class="day">
+        <span class="dayname">${name}</span>
+        <span>${wi[0]}</span>
+        <span class="daytemp">
+          <b>${round(d.temperature_2m_max[i])}°</b>
+          / ${round(d.temperature_2m_min[i])}°
+        </span>
+      </div>`;
+    }).join("");
+
+    $("status").textContent =
+      "✓ Dữ liệu trực tiếp · " + data.timezone;
+
+  } catch (error) {
+    $("status").className = "error";
+    $("status").textContent = "⚠️ " + error.message;
+    $("cityName").textContent = "Không tải được dữ liệu";
+    $("desc").textContent =
+      "Kiểm tra Internet rồi nhấn Tìm để thử lại.";
   }
 }
+
+$("searchForm").addEventListener("submit", function(event) {
+  event.preventDefault();
+  loadWeather();
+});
 
 loadWeather();
 </script>
